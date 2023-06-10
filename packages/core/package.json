@@ -1,0 +1,25 @@
+{
+  "name": "@man-cli-test/core",
+  "version": "1.0.0",
+  "description": "man-cli-test core",
+  "author": "man.wang <man.wang@symbio.com>",
+  "homepage": "",
+  "license": "ISC",
+  "main": "lib/index.js",
+  "bin": {
+    "man-cli-test": "bin/index.js"
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "scripts": {
+    "test": "node ./__tests__/core.test.js"
+  },
+  "dependencies": {
+    "@man-cli-test/utils": "file: ../utils"
+  }
+}
