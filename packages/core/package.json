@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@man-cli-test/utils": "file: ../utils",
+    "path-exists": "^4.0.0",
     "semver": "^7.5.1"
   }
 }
