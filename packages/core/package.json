@@ -20,6 +20,7 @@
     "test": "node ./__tests__/core.test.js"
   },
   "dependencies": {
-    "@man-cli-test/utils": "file: ../utils"
+    "@man-cli-test/utils": "file: ../utils",
+    "semver": "^7.5.1"
   }
 }
