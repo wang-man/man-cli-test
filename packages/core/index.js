@@ -6,11 +6,13 @@ const { Command } = require('commander')
 
 const { log } = require('@man-cli-test/utils');
 
+const exec = require('./lib/exec')
+
 const LOWEST_NODE_VERSION = '12.0.0';
 
 
 
-const pkg = require('../package.json');
+const pkg = require('./package.json');
 const program = new Command();
 
 
@@ -91,6 +93,7 @@ function registryCommand() {
   program
     .command('init [projectName]')
     .option('-f, --force', '是否强制化初始项目')
+    .action(exec)
 
 
   program.parse(process.argv)   // 此行必需要有

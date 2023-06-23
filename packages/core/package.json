@@ -5,7 +5,7 @@
   "author": "man.wang <man.wang@symbio.com>",
   "homepage": "",
   "license": "ISC",
-  "main": "lib/index.js",
+  "main": "./index.js",
   "bin": {
     "man-cli-test": "bin/index.js"
   },
@@ -22,7 +22,10 @@
   "dependencies": {
     "@man-cli-test/utils": "file: ../utils",
     "commander": "^11.0.0",
+    "dashify": "^2.0.0",
+    "fse": "^4.0.1",
+    "inquirer": "^8.2.5",
     "path-exists": "^4.0.0",
-    "semver": "^7.5.1"
+    "semver": "^7.5.3"
   }
 }
