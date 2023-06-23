@@ -85,10 +85,16 @@ function registryCommand() {
     .name(Object.keys(pkg.bin)[0])
     .usage('<command> [option]')        // Usage: man-cli-test <command> [option]
     .option('-d, --debug', '是否开启调试模式', false)
-    .option('-tp, --targetPath <targetPath>', '是否指定本地调试文件路径', '')
     .version(pkg.version);
 
 
+  program.on('command:*', function (commands) {
+    const availableCommands = program.commands.map(cmd => cmd.name());  // program.commands获取已注册的命令，cmd.name()获取命令名字
+    log.error('未知命令：', commands[0]);  // commands获取输入的命令
+    if (availableCommands.length > 0) {
+      log.info('可用命令：', availableCommands.join(','))
+    }
+  })
 
   program
     .command('init [projectName]')

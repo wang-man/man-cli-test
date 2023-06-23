@@ -37,7 +37,7 @@ class Command {
   async prepare() {
     // 这一步首先得判断项目是否存在模板，这是创建项目的前提
     const template = await getTemplate();
-    console.log('template', template)
+    // console.log('template', template)
     if (!template || !template.length) {
       throw new Error('项目模板不存在');    // 就不往后面走了
     }
