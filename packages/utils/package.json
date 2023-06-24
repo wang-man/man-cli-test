@@ -18,6 +18,9 @@
   },
   "dependencies": {
     "axios": "^1.4.0",
-    "npmlog": "^7.0.1"
+    "cli-spinner": "^0.2.10",
+    "npmlog": "^7.0.1",
+    "semver-compare": "^1.0.0",
+    "url-join": "^4.0.1"
   }
 }

@@ -1,10 +1,18 @@
 
-const { log } = require('@man-cli-test/utils');
+const { log, spinnerStart, sleep, getNpmInfo, getNpmVersions, getLastVersion, getDefaultRegistry, getLatestVersion } = require('@man-cli-test/utils');
 const fs = require('fs');
+const path = require('path');
 const inquirer = require('inquirer');
 const fse = require('fs-extra');
 const semver = require('semver');
 const dashify = require('dashify');
+const npminstall = require('npminstall');
+const { homedir } = require('os');
+const pathExists = require('path-exists').sync;
+const glob = require('glob');
+const ejs = require('ejs');
+
+
 const getTemplate = require('./getTemplate');
 
 
@@ -214,9 +222,115 @@ class Command {
   isDirEmpty(localPath) {
     let fileList = fs.readdirSync(localPath);  // 注意这个api用于读取文件夹内所有文件和文件夹名字，另外有一个叫做readFileSync
     // 对.git、node_modules等文件过滤
-    fileList = fileList.filter(file => !file.startsWith('.') && ['node_modules'].indexOf(file) < 0);
+    // fileList = fileList.filter(file => !file.startsWith('.') && ['node_modules'].indexOf(file) < 0);
     return fileList.length === 0;
   }
+
+  /**
+   * 将模板安装到C盘存储
+   * 每次检查是否已有该版本模板
+   * 将该模板拷贝至测试目录
+   */
+
+  async downloadTemplate() {
+    const { projectTemplate } = this.projectInfo;
+    const templateInfo = this.template.find(item => item.npmName === projectTemplate);  // 从所有模板数组中获取被选择的这个模板
+    this.templateInfo = templateInfo;
+    const { npmName } = templateInfo;  // 这个version是数据库中的，而不是命令行输入的
+    console.log(templateInfo)
+
+    const packageVersion = await getLatestVersion(projectTemplate); // 获取模板实际版本号，接口中版本号仅做标识，实际上以npm为准
+
+    const targetPath = path.resolve(homedir(), '.man-cli-test', 'template');  // 模板下载存放目录，选择放在C盘
+    this.templatePath = path.resolve(targetPath, 'node_modules/.store', `${npmName}@${packageVersion}`, 'node_modules', npmName, 'template');   // 模板下载后的地址，这是由npminstall决定：C:\Users\满\.man-cli-test\template\node_modules\.store\man-cli-dev-template-vue3@1.0.4\node_modules\man-cli-dev-template-vue3\template
+    console.log(this.templatePath)
+
+    if (!pathExists(this.templatePath)) {  // 判断是否已经下载了该模板，直接copy到测试目录
+      const spinner = spinnerStart('正在下载模板...');
+      await sleep(5000);  // 测试spinner效果
+      try {
+        await npminstall({
+          root: targetPath,  // 当前执行命令所在目录
+          registry: getDefaultRegistry(),
+          pkgs: [
+            {
+              name: npmName,
+              // version
+            }
+          ]
+        });
+      } catch (error) {
+        throw error;      // 这里仍然需要抛出异常，给到外层调用的exec中捕获
+      } finally {
+        spinner.stop(true);
+        if (pathExists(this.templatePath)) {
+          log.success('下载完成')
+        }
+      }
+    }
+
+    await this.installTemplate()
+  }
+
+  // 将模板拷贝至测试目录
+  async installTemplate() {
+    let spinner = spinnerStart('正在安装模板...');
+    await sleep(4000);  // 测试spinner效果
+    try {
+      const cwd = process.cwd();  // 当前工作目录
+      fse.ensureDirSync(this.templatePath);   // 判断目录是否存在，否则创建这个目录
+      fse.ensureDirSync(cwd);
+      fse.copySync(this.templatePath, cwd);  // 将模板目录拷贝至当前工作目录
+    } catch (error) {
+      throw error
+    } finally {
+      spinner.stop(true);
+      log.success('安装成功')
+    }
+
+    // 将输入的项目名和版本号填充到所下载的模板中
+    const templateIgnore = this.templateInfo.ejsIgnore || [];
+    const ignore = ['node_modules/**', ...templateIgnore]; // public的index.html文件含有webpack的模板语法干扰ejs语法。因此需要根据不同模板的配置信息来忽视这些文件。
+    await this.ejsRender({ ignore })
+  }
+
+
+  async ejsRender(options) {
+    const dir = process.cwd();
+    const projectInfo = this.projectInfo;
+    return new Promise((resolve, reject) => {
+      // 找到当前工作目录的所有文件
+      glob('**', {
+        cwd: dir,
+        ignore: options.ignore || '',
+        nodir: true
+      }, function (err, files) {
+        if (err) {
+          reject(err)
+        }
+        // 这里为什么要用Promise？其实同步写法也行。
+        Promise.all(files.map(file => {
+          const filePath = path.join(dir, file);   // 拼接出完整路径:...\man-cli-test\babel.config.js
+          // 关键一步：用ejs将项目的所有文件里可能存在的模板语法替换为projectInfo中的信息。
+          return new Promise((resolve1, reject1) => {
+            // console.log('projectInfo', projectInfo);  // 这得到的this已经发生改变，所以this.projectInfo拿不到，因此在上面将其赋给一个变量
+            ejs.renderFile(filePath, projectInfo, {}, (err, result) => {
+              if (err) {
+                reject1(err)
+              } else {
+                // ejs.renderFile只是拿到数据完成替换，但并不负责写入文件，因此这里还需要将替换后的数据写回文件的这一步
+                fse.writeFileSync(filePath, result);    // 写入文件
+                resolve1(result)
+              }
+            })
+          })
+        }))
+        resolve();
+      })
+    })
+  }
+
+
 
   async exec() {
 
@@ -236,12 +350,12 @@ class Command {
     try {
       // 1.准备阶段
       const projectInfo = await this.prepare();
-      console.log('projectInfo', projectInfo)
+      console.log('cwd', process.cwd())
       if (projectInfo) {
         // 2.下载模板
-        // await this.downloadTemplate();    // 这里为什么要加await？就是为了downloadTemplate内部出现错误的时候在这里能够捕获到，否则就需要在其内部再次捕获。这是async/await的特性
-        // 3.安装模板
-        // await this.installTemplate();
+        await this.downloadTemplate();
+        // 3.安装模板依赖
+        // await this.installPackages();
       }
     } catch (error) {
       log.error(error);
