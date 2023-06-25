@@ -23,7 +23,7 @@
     "test": "node ./__tests__/core.test.js"
   },
   "dependencies": {
-    "@man-cli-test/utils": "file: ..",
+    "@man-cli-test/utils": "^1",
     "commander": "^11.0.0",
     "dashify": "^2.0.0",
     "ejs": "^3.1.9",
