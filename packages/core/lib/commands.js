@@ -237,17 +237,17 @@ class Command {
     const templateInfo = this.template.find(item => item.npmName === projectTemplate);  // 从所有模板数组中获取被选择的这个模板
     this.templateInfo = templateInfo;
     const { npmName } = templateInfo;  // 这个version是数据库中的，而不是命令行输入的
-    console.log(templateInfo)
+    // console.log(templateInfo)
 
     const packageVersion = await getLatestVersion(projectTemplate); // 获取模板实际版本号，接口中版本号仅做标识，实际上以npm为准
 
     const targetPath = path.resolve(homedir(), '.man-cli-test', 'template');  // 模板下载存放目录，选择放在C盘
     this.templatePath = path.resolve(targetPath, 'node_modules/.store', `${npmName}@${packageVersion}`, 'node_modules', npmName, 'template');   // 模板下载后的地址，这是由npminstall决定：C:\Users\满\.man-cli-test\template\node_modules\.store\man-cli-dev-template-vue3@1.0.4\node_modules\man-cli-dev-template-vue3\template
-    console.log(this.templatePath)
+    // console.log(this.templatePath)
 
     if (!pathExists(this.templatePath)) {  // 判断是否已经下载了该模板，直接copy到测试目录
       const spinner = spinnerStart('正在下载模板...');
-      await sleep(5000);  // 测试spinner效果
+      await sleep();  // 测试spinner效果
       try {
         await npminstall({
           root: targetPath,  // 当前执行命令所在目录
@@ -275,7 +275,7 @@ class Command {
   // 将模板拷贝至测试目录
   async installTemplate() {
     let spinner = spinnerStart('正在安装模板...');
-    await sleep(4000);  // 测试spinner效果
+    await sleep();  // 测试spinner效果
     try {
       const cwd = process.cwd();  // 当前工作目录
       fse.ensureDirSync(this.templatePath);   // 判断目录是否存在，否则创建这个目录

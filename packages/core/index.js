@@ -8,7 +8,7 @@ const { log } = require('@man-cli-test/utils');
 
 const exec = require('./lib/exec')
 
-const LOWEST_NODE_VERSION = '12.0.0';
+const LOWEST_NODE_VERSION = '16.0.0';
 
 
 
