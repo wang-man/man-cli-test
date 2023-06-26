@@ -1,5 +1,5 @@
 
-const { log, spinnerStart, sleep, getNpmInfo, getNpmVersions, getLastVersion, getDefaultRegistry, getLatestVersion } = require('@man-cli-test/utils');
+const { log, spinnerStart, sleep, getNpmInfo, getNpmVersions, getLastVersion, getDefaultRegistry, getLatestVersion, spawn, spawnAsync } = require('@man-cli-test/utils');
 const fs = require('fs');
 const path = require('path');
 const inquirer = require('inquirer');
@@ -201,7 +201,7 @@ class Command {
         ...info
       }
     }
-
+    // dashify用来转化格式：AbcDe -> abc-de
     if (projectInfo.projectName) {
       projectInfo.name = dashify(projectInfo.projectName);  // 增加一个属性
       projectInfo.className = dashify(projectInfo.projectName)
@@ -330,7 +330,30 @@ class Command {
     })
   }
 
+  async installPackages() {
+    // 安装依赖+启动项目
+    const { installCommand, startCommand } = this.templateInfo; // 获取数据库中配置的指令
+    await this.execCommand(installCommand, '依赖安装失败')
+    await this.execCommand(startCommand, '启动失败')
+  }
 
+
+  // 抽离出来的执行下载的模板中的指令
+  async execCommand(command, msg) {
+    let installResult;
+    if (command) {
+      const commandList = command.split(' '); // 'cnpm install'.split(' ')
+      const cmd = commandList[0];
+      const args = commandList.slice(1);
+      installResult = await spawnAsync(cmd, args, {
+        stdio: 'inherit',
+        cwd: process.cwd()
+      })
+    }
+    if (installResult !== 0) {
+      throw new Error(msg)
+    }
+  }
 
   async exec() {
 
@@ -355,7 +378,7 @@ class Command {
         // 2.下载模板
         await this.downloadTemplate();
         // 3.安装模板依赖
-        // await this.installPackages();
+        await this.installPackages();
       }
     } catch (error) {
       log.error(error);
