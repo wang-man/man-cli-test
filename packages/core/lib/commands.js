@@ -221,7 +221,7 @@ class Command {
 
   isDirEmpty(localPath) {
     let fileList = fs.readdirSync(localPath);  // 注意这个api用于读取文件夹内所有文件和文件夹名字，另外有一个叫做readFileSync
-    // 对.git、node_modules等文件过滤
+    // 对.git、node_modules等文件过滤：
     // fileList = fileList.filter(file => !file.startsWith('.') && ['node_modules'].indexOf(file) < 0);
     return fileList.length === 0;
   }
