@@ -49,7 +49,7 @@ async function getLatestVersion(pkgName, registry) {
   return allVersions[allVersions.length - 1];
 }
 
-function getDefaultRegistry(isOriginal = false) {    // 这里要十分注意，用镜像版很可能拿到的还不是最新的包，但不用镜像版又很慢
+function getDefaultRegistry(isOriginal = true) {    // 这里要十分注意，用镜像版很可能拿到的还不是最新的包，但不用镜像版又很慢
   return isOriginal ? 'https://registry.npmjs.org/' : 'https://registry.npmmirror.com/'
 }
 

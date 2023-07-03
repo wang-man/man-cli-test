@@ -43,7 +43,7 @@ function checkUserHome() {
   }
 }
 
-// 检查脚手架版本号
+// 检查脚手架版本号。因getLastVersion拿到的是国内镜像版本，因此如果刚发布新版本不一定能获取到
 async function checkGlobalUpdate() {
   const pkgName = pkg.name;
   const pkgVersion = pkg.version;
