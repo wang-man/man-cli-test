@@ -4,7 +4,7 @@ const { homedir } = require('os');
 const pathExists = require('path-exists').sync;
 const { Command } = require('commander')
 
-const { log } = require('@man-cli-test/utils');
+const { log, getLastVersion } = require('@man-cli-test/utils');
 
 const exec = require('./lib/exec')
 
@@ -43,6 +43,15 @@ function checkUserHome() {
   }
 }
 
+// 检查脚手架版本号
+async function checkGlobalUpdate() {
+  const pkgName = pkg.name;
+  const pkgVersion = pkg.version;
+  const lastVersion = await getLastVersion(pkgVersion, pkgName);
+  if (lastVersion && semver.gt(lastVersion, pkgVersion)) {
+    log.warn('升级更新：', `当前有最新版本为${lastVersion}，建议更新`)
+  }
+}
 
 function registryCommand() {
   /* -------------------------官网示例演示选项功能----------------------------------*/
@@ -108,12 +117,13 @@ function registryCommand() {
 
 module.exports = core;
 
-function core() {
+async function core() {
   try {
     checkPkgVersion()
     checkNodeVersion()
     // checkRoot()
     checkUserHome();
+    await checkGlobalUpdate()
     registryCommand()
   } catch (error) {
     log.error(error.message);
