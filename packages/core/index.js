@@ -98,6 +98,7 @@ function registryCommand() {
 
   program
     .command('init [projectName]')
+    .description('初始化一个项目')
     .option('-f, --force', '是否强制化初始项目')
     .action(exec)
 
