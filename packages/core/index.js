@@ -115,15 +115,19 @@ function registryCommand() {
   program.parse(process.argv)   // 此行必需要有
 }
 
+async function prepare() {
+  checkPkgVersion()
+  checkNodeVersion()
+  // checkRoot()
+  checkUserHome();
+  await checkGlobalUpdate()
+}
+
 module.exports = core;
 
 async function core() {
   try {
-    checkPkgVersion()
-    checkNodeVersion()
-    // checkRoot()
-    checkUserHome();
-    await checkGlobalUpdate()
+    prepare()
     registryCommand()
   } catch (error) {
     log.error(error.message);
